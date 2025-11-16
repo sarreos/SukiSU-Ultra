@@ -40,15 +40,25 @@ perform_cleanup() {
 setup_kernelsu() {
     echo "[+] Setting up KernelSU..."
     # Clone the repository and rename it to KernelSU
-    if [ ! -d "$GKI_ROOT/KernelSU" ]; then
-        git clone https://github.com/SukiSU-Ultra/SukiSU-Ultra SukiSU-Ultra
-        mv SukiSU-Ultra KernelSU
-        echo "[+] Repository cloned and renamed to KernelSU."
+    if [ ! -d "$KERNEL_ROOT/KernelSU" ]; then
+        git clone https://github.com/sarreos/SukiSU-Ultra KernelSU
+        echo "[+] Repository cloned."
     fi
     cd "$KERNEL_ROOT/KernelSU"
-    git checkout 3a0f9b4 && echo "[-] Switched to commit 3a0f9b4."
+    git stash && echo "[-] Stashed current changes."
+    if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
+        git checkout main && echo "[-] Switched to main branch."
+    fi
+    git pull && echo "[+] Repository updated."
+    if [ -z "${1-}" ]; then
+        git checkout "$(git describe --abbrev=0 --tags)" && echo "[-] Checked out latest tag."
+    else
+        git checkout "$1" && echo "[-] Checked out $1." || echo "[-] Checkout default branch"
+    fi
+    cd "$KERNEL_ROOT/KernelSU"
+    git checkout 4920877
     cd "$DRIVER_DIR"
-    ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$GKI_ROOT/KernelSU/kernel")" "kernelsu" && echo "[+] Symlink created."
+    ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$KERNEL_ROOT/KernelSU/kernel")" "kernelsu" && echo "[+] Symlink created."
 
     # Add entries in Makefile and Kconfig if not already existing
     grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE" && echo "[+] Modified Makefile."
