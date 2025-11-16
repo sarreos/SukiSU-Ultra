@@ -46,7 +46,7 @@ setup_kernelsu() {
         echo "[+] Repository cloned and renamed to KernelSU."
     fi
     cd "$KERNEL_ROOT/KernelSU"
-    git checkout 3a0f9b4
+    git checkout 3a0f9b4 && echo "[-] Switched to commit 3a0f9b4."
     cd "$DRIVER_DIR"
     ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$GKI_ROOT/KernelSU/kernel")" "kernelsu" && echo "[+] Symlink created."
 
